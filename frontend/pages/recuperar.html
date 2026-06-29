@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CiênciaQuiz – Recuperar Senha</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css">
+</head>
+<body>
+  <div class="stars" id="stars"></div>
+  <div class="toast" id="toast"></div>
+
+  <div class="page">
+    <div class="card fade-up">
+      <p class="titulo-logo">🔬 CiênciaQuiz</p>
+
+      <h2>Recuperar Senha</h2>
+      <p style="text-align:center;color:var(--texto-muted);font-size:0.88rem;margin-bottom:1.75rem;">
+        Digite seu e-mail cadastrado e enviaremos um link para redefinir sua senha.
+      </p>
+
+      <div class="input-group">
+        <i class="ti ti-mail icon"></i>
+        <input type="email" id="email" placeholder="Seu e-mail">
+      </div>
+
+      <button class="btn btn-primary" onclick="enviar()">
+        <i class="ti ti-send"></i> Enviar link
+      </button>
+
+      <p class="link-texto"><a href="login.html"><i class="ti ti-arrow-left"></i> Voltar ao login</a></p>
+    </div>
+  </div>
+
+  <script src="../assets/js/utils.js"></script>
+  <script>
+    gerarEstrelas();
+
+    function enviar() {
+      const email = document.getElementById("email").value.trim();
+      limparErros();
+      if (!email) { mostrarErro("email", "Informe o e-mail."); return; }
+      toast(`Link enviado para ${email} ✉️`, "sucesso");
+      setTimeout(() => window.location.href = "login.html", 2500);
+    }
+  </script>
+</body>
+</html>

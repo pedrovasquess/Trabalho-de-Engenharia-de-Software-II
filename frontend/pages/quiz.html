@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CiênciaQuiz – Jogar</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css">
+  <style>
+    .quiz-wrapper {
+      max-width: 600px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    /* Topbar */
+    .topbar {
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .back-btn {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--card); border: 1px solid var(--card-border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--texto); flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.12); }
+    .progresso-bar-outer {
+      flex: 1; height: 8px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 100px; overflow: hidden;
+    }
+    .progresso-bar-inner {
+      height: 100%; border-radius: 100px;
+      background: linear-gradient(90deg, var(--roxo), var(--ciano));
+      transition: width 0.4s ease;
+    }
+    .progresso-txt {
+      font-size: 0.78rem; font-weight: 800;
+      color: var(--texto-muted); flex-shrink: 0;
+    }
+    /* Timer */
+    .timer-row {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .timer-circle {
+      width: 52px; height: 52px; border-radius: 50%;
+      border: 3px solid var(--roxo-claro);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.3rem;
+      color: var(--roxo-claro);
+      transition: border-color 0.3s, color 0.3s;
+      flex-shrink: 0;
+    }
+    .timer-circle.urgente { border-color: var(--vermelho); color: var(--vermelho); animation: pulse-ring 0.8s ease-in-out infinite; }
+    .area-info {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.82rem; font-weight: 800; color: var(--texto-muted);
+    }
+    .pontos-rodada {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.1rem; color: var(--amarelo);
+    }
+    /* Pergunta */
+    .pergunta-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem 1.5rem;
+    }
+    .pergunta-num {
+      font-size: 0.72rem; font-weight: 800; letter-spacing: 1.5px;
+      color: var(--roxo-claro); text-transform: uppercase; margin-bottom: 0.75rem;
+    }
+    .pergunta-texto {
+      font-size: 1.1rem; font-weight: 700; line-height: 1.5;
+    }
+    /* Opções */
+    .opcoes-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    @media (max-width: 480px) { .opcoes-grid { grid-template-columns: 1fr; } }
+    .opcao-btn {
+      background: var(--card);
+      border: 1.5px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      color: var(--texto);
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+      display: flex; align-items: center; gap: 0.6rem;
+      line-height: 1.3;
+    }
+    .opcao-btn:hover:not(:disabled) {
+      background: rgba(108,62,240,0.15);
+      border-color: var(--roxo-claro);
+      transform: translateY(-2px);
+    }
+    .opcao-btn:disabled { cursor: default; }
+    .opcao-btn.correta {
+      background: rgba(16,185,129,0.2);
+      border-color: var(--verde);
+      color: #6EF0C0;
+      animation: correctPop 0.4s ease;
+    }
+    .opcao-btn.errada {
+      background: rgba(239,68,68,0.15);
+      border-color: var(--vermelho);
+      color: #FF8080;
+    }
+    .opcao-letra {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.78rem; font-weight: 900; flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .opcao-btn.correta .opcao-letra { background: var(--verde); color: white; }
+    .opcao-btn.errada .opcao-letra { background: var(--vermelho); color: white; }
+    /* Explicação */
+    .explicacao {
+      background: rgba(6,182,212,0.1);
+      border: 1px solid rgba(6,182,212,0.3);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: #A0EEF8;
+      display: none;
+    }
+    .explicacao.visivel { display: block; animation: fadeUp 0.3s ease; }
+    /* Próxima */
+    .proxima-row {
+      display: none; gap: 0.75rem;
+    }
+    .proxima-row.visivel { display: flex; }
+    /* Pontos flutuantes */
+    .pts-float {
+      position: fixed;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.5rem;
+      color: var(--amarelo);
+      pointer-events: none;
+      z-index: 9999;
+      animation: floatUp 1s ease forwards;
+    }
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-80px) scale(1.3); }
+    }
+    /* Streak */
+    .streak-badge {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-size: 0.85rem; font-weight: 800;
+      color: var(--amarelo);
+    }
+  </style>
+</head>
+<body>
+  <div class="stars" id="stars"></div>
+
+  <div class="page" style="justify-content:flex-start; padding-top:2rem;">
+    <div class="quiz-wrapper">
+
+      <!-- Topbar -->
+      <div class="topbar fade-up">
+        <div class="back-btn" onclick="confirmarSaida()">
+          <i class="ti ti-arrow-left"></i>
+        </div>
+        <div class="progresso-bar-outer">
+          <div class="progresso-bar-inner" id="barra-progresso" style="width:0%"></div>
+        </div>
+        <span class="progresso-txt" id="progresso-txt">0/5</span>
+      </div>
+
+      <!-- Timer + info -->
+      <div class="timer-row fade-up-2">
+        <div class="area-info">
+          <span id="area-emoji">🔬</span>
+          <span id="area-nome">Ciências</span>
+          <span class="badge badge-roxo" id="nivel-badge">Infantil</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <span class="streak-badge" id="streak-display" style="display:none;">🔥 <span id="streak-num">0</span>x</span>
+          <span class="pontos-rodada">⭐ <span id="pontos-rodada">0</span></span>
+          <div class="timer-circle" id="timer-circle">15</div>
+        </div>
+      </div>
+
+      <!-- Pergunta -->
+      <div class="pergunta-card fade-up-2" id="pergunta-card">
+        <p class="pergunta-num" id="pergunta-num">Pergunta 1 de 5</p>
+        <p class="pergunta-texto" id="pergunta-texto">Carregando...</p>
+      </div>
+
+      <!-- Opções -->
+      <div class="opcoes-grid fade-up-3" id="opcoes-grid"></div>
+
+      <!-- Explicação -->
+      <div class="explicacao" id="explicacao"></div>
+
+      <!-- Próxima / Fim -->
+      <div class="proxima-row" id="proxima-row">
+        <button class="btn btn-secondary" style="flex:0 0 auto;width:auto;padding:0.9rem 1.25rem;" onclick="confirmarSaida()">
+          <i class="ti ti-home"></i>
+        </button>
+        <button class="btn btn-primary" id="btn-proxima" onclick="proximaPergunta()">
+          Próxima <i class="ti ti-arrow-right"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/utils.js"></script>
+  <script src="../assets/js/questoes.js"></script>
+  <script>
+(async () => {
+
+    if (!await exigirLoginAsync()) return;
+    gerarEstrelas();
+
+    // ── Config ──────────────────────────────────────────────
+    const TEMPO_POR_QUESTAO = 15;
+    const PONTOS_BASE = 10;
+    const BONUS_TEMPO = 5;
+    const TOTAL_QUESTOES = 5;
+
+    let area = localStorage.getItem("quizArea") || "biologia";
+    let nivel = localStorage.getItem("quizNivel") || "crianca";
+    let questoes = [];
+    let atual = 0;
+    let pontos = 0;
+    let streak = 0;
+    let timer = null;
+    let tempoRestante = TEMPO_POR_QUESTAO;
+    let respondeu = false;
+
+    // ── Montar banco ─────────────────────────────────────────
+    function montarQuestoes() {
+      if (area === "surpresa") {
+        let pool = [];
+        AREAS.forEach(a => {
+          pool = pool.concat(QUESTOES[a.id][nivel].map(q => ({ ...q, _area: a })));
+        });
+        pool = embaralhar(pool);
+        questoes = pool.slice(0, TOTAL_QUESTOES);
+      } else {
+        const pool = embaralhar([...QUESTOES[area][nivel]]);
+        questoes = pool.slice(0, TOTAL_QUESTOES);
+      }
+    }
+
+    function embaralhar(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // ── UI header ────────────────────────────────────────────
+    function setupHeader() {
+      const info = AREAS.find(a => a.id === area);
+      if (area === "surpresa") {
+        document.getElementById("area-emoji").textContent = "🎲";
+        document.getElementById("area-nome").textContent = "Surpresa";
+      } else if (info) {
+        document.getElementById("area-emoji").textContent = info.emoji;
+        document.getElementById("area-nome").textContent = info.nome;
+      }
+      document.getElementById("nivel-badge").textContent = nivel === "crianca" ? "🌱 Infantil" : "🚀 Ensino Médio";
+    }
+
+    // ── Renderizar pergunta ───────────────────────────────────
+    function renderPergunta() {
+      respondeu = false;
+      const q = questoes[atual];
+      const total = questoes.length;
+
+      // progresso
+      const pct = (atual / total) * 100;
+      document.getElementById("barra-progresso").style.width = pct + "%";
+      document.getElementById("progresso-txt").textContent = `${atual}/${total}`;
+      document.getElementById("pergunta-num").textContent = `Pergunta ${atual + 1} de ${total}`;
+      document.getElementById("pergunta-texto").textContent = q.p;
+      document.getElementById("pontos-rodada").textContent = pontos;
+
+      // streak
+      const sd = document.getElementById("streak-display");
+      if (streak >= 2) {
+        sd.style.display = "inline-flex";
+        document.getElementById("streak-num").textContent = streak;
+      } else {
+        sd.style.display = "none";
+      }
+
+      // explicação
+      const exp = document.getElementById("explicacao");
+      exp.className = "explicacao";
+      exp.textContent = "";
+
+      // próxima row
+      document.getElementById("proxima-row").className = "proxima-row";
+
+      // opções
+      const grid = document.getElementById("opcoes-grid");
+      grid.innerHTML = "";
+      const letras = ["A", "B", "C", "D"];
+      q.op.forEach((op, i) => {
+        const btn = document.createElement("button");
+        btn.className = "opcao-btn";
+        btn.innerHTML = `<span class="opcao-letra">${letras[i]}</span> ${op}`;
+        btn.onclick = () => responder(i, btn, q);
+        grid.appendChild(btn);
+      });
+
+      // timer
+      iniciarTimer();
+
+      // animação
+      document.getElementById("pergunta-card").style.animation = "none";
+      setTimeout(() => document.getElementById("pergunta-card").style.animation = "fadeUp 0.35s ease", 10);
+    }
+
+    // ── Timer ────────────────────────────────────────────────
+    function iniciarTimer() {
+      clearInterval(timer);
+      tempoRestante = TEMPO_POR_QUESTAO;
+      const el = document.getElementById("timer-circle");
+      el.textContent = tempoRestante;
+      el.className = "timer-circle";
+
+      timer = setInterval(() => {
+        tempoRestante--;
+        el.textContent = tempoRestante;
+        if (tempoRestante <= 5) el.className = "timer-circle urgente";
+        if (tempoRestante <= 0) {
+          clearInterval(timer);
+          timeOut();
+        }
+      }, 1000);
+    }
+
+    function timeOut() {
+      if (respondeu) return;
+      respondeu = true;
+      streak = 0;
+      mostrarRespostaCerta(questoes[atual].r, null);
+      mostrarExplicacao(questoes[atual].exp);
+      document.getElementById("proxima-row").className = "proxima-row visivel";
+      toast("⏱️ Tempo esgotado!", "erro");
+    }
+
+    // ── Responder ────────────────────────────────────────────
+    function responder(idx, btn, q) {
+      if (respondeu) return;
+      respondeu = true;
+      clearInterval(timer);
+
+      const correta = idx === q.r;
+
+      if (correta) {
+        const bonus = Math.floor(tempoRestante * BONUS_TEMPO / TEMPO_POR_QUESTAO * 10);
+        const ganho = PONTOS_BASE + bonus;
+        pontos += ganho;
+        streak++;
+        if (streak >= 2) pontos += streak * 2; // bônus streak
+
+        btn.className = "opcao-btn correta";
+        mostrarPtsFloat(ganho + (streak >= 2 ? ` +🔥${streak * 2}` : ""));
+        toast(streak >= 3 ? `🔥 ${streak}x Combo! +${ganho}pts` : `✅ Correto! +${ganho}pts`, "sucesso");
+      } else {
+        streak = 0;
+        btn.className = "opcao-btn errada";
+        mostrarRespostaCerta(q.r, null);
+        toast("❌ Resposta errada!", "erro");
+      }
+
+      document.getElementById("pontos-rodada").textContent = pontos;
+      mostrarExplicacao(q.exp);
+      document.getElementById("proxima-row").className = "proxima-row visivel";
+
+      if (atual === questoes.length - 1) {
+        document.getElementById("btn-proxima").textContent = "Ver resultado 🏆";
+      }
+
+      // desabilitar todos
+      document.querySelectorAll(".opcao-btn").forEach(b => b.disabled = true);
+    }
+
+    function mostrarRespostaCerta(idx, destaque) {
+      const btns = document.querySelectorAll(".opcao-btn");
+      if (btns[idx]) btns[idx].className = "opcao-btn correta";
+    }
+
+    function mostrarExplicacao(txt) {
+      const el = document.getElementById("explicacao");
+      el.textContent = "💡 " + txt;
+      el.className = "explicacao visivel";
+    }
+
+    function mostrarPtsFloat(txt) {
+      const el = document.createElement("div");
+      el.className = "pts-float";
+      el.textContent = `+${txt}`;
+      el.style.left = (window.innerWidth / 2 - 40) + "px";
+      el.style.top = (window.innerHeight / 2) + "px";
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 1000);
+    }
+
+    // ── Próxima ──────────────────────────────────────────────
+    function proximaPergunta() {
+      atual++;
+      if (atual >= questoes.length) {
+        irParaResultado();
+      } else {
+        renderPergunta();
+      }
+    }
+
+    async function irParaResultado() {
+      clearInterval(timer);
+      await atualizarPontos(pontos);
+      localStorage.setItem("resultado", JSON.stringify({
+        pontos, total: questoes.length,
+        area, nivel
+      }));
+      window.location.href = "resultado.html";
+    }
+
+    // Expor funções chamadas pelo HTML no escopo global
+    window.proximaPergunta = function() {
+      atual++;
+      if (atual >= questoes.length) {
+        irParaResultado();
+      } else {
+        renderPergunta();
+      }
+    };
+
+    window.confirmarSaida = function() {
+      clearInterval(timer);
+      if (atual > 0) {
+        if (confirm("Sair do quiz? O progresso será perdido.")) {
+          window.location.href = "home.html";
+        } else {
+          iniciarTimer();
+        }
+      } else {
+        window.location.href = "home.html";
+      }
+    };
+
+    // ── Init ─────────────────────────────────────────────────
+    montarQuestoes();
+    setupHeader();
+    renderPergunta();
+  
+})();
+</script>
+</body>
+</html>

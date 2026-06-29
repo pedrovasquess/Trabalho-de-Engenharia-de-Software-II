@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CiênciaQuiz – Login</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css">
+</head>
+<body>
+  <div class="stars" id="stars"></div>
+  <div class="toast" id="toast"></div>
+
+  <div class="page">
+    <div class="card fade-up">
+      <p class="titulo-logo">🔬 CiênciaQuiz</p>
+      <p class="titulo-sub">Aprenda ciência brincando!</p>
+
+      <h2>Entrar</h2>
+      <p style="text-align:center;color:var(--texto-muted);font-size:0.88rem;margin-bottom:1.5rem;">Bem-vindo(a) de volta! 👋</p>
+
+      <div class="input-group">
+        <i class="ti ti-user icon"></i>
+        <input type="text" id="Nome" placeholder="Seu nome de usuário">
+        <label class="float">Nome de usuário</label>
+      </div>
+
+      <div class="input-group">
+        <i class="ti ti-lock icon"></i>
+        <input type="password" id="Senha" placeholder="Sua senha">
+        <label class="float">Senha</label>
+      </div>
+
+      <button class="btn btn-primary" onclick="fazerLogin()">
+        <i class="ti ti-login"></i> Entrar
+      </button>
+      <button class="btn btn-secondary" onclick="window.location.href='cadastrar.html'">
+        <i class="ti ti-user-plus"></i> Criar conta
+      </button>
+
+      <p class="link-texto" style="margin-top:1.25rem;">
+        Esqueceu sua senha? <a href="recuperar.html">Recuperar</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/utils.js"></script>
+  <script>
+    gerarEstrelas();
+
+    // Verifica no servidor se o token ainda é válido
+    (async () => {
+      if (getToken()) {
+        try {
+          const res = await fetch('http://localhost:3000/api/auth/perfil', {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+          });
+          if (res.ok) {
+            window.location.href = 'home.html';
+          } else {
+            // Token inválido — limpa e fica no login
+            localStorage.removeItem('token');
+            localStorage.removeItem('usuarioLogado');
+          }
+        } catch(e) {
+          // Servidor offline — não redireciona
+        }
+      }
+    })();
+
+    async function fazerLogin() {
+      const nome = document.getElementById("Nome").value.trim();
+      const senha = document.getElementById("Senha").value.trim();
+      limparErros();
+
+      let ok = true;
+      if (!nome) { mostrarErro("Nome", "Informe o nome."); ok = false; }
+      if (!senha) { mostrarErro("Senha", "Informe a senha."); ok = false; }
+      if (!ok) return;
+
+      const resultado = await authLogin(nome, senha);
+      if (!resultado.ok) {
+        mostrarErro("Senha", resultado.msg || "Usuário ou senha incorretos.");
+        return;
+      }
+
+      toast(`Bem-vindo(a), ${resultado.usuario.nome || resultado.usuario.nomeResponsavel}! 🎉`, "sucesso");
+      setTimeout(() => window.location.href = "home.html", 1200);
+    }
+  </script>
+</body>
+</html>

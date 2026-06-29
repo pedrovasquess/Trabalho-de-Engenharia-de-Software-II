@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CiênciaQuiz – Ranking</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css">
+  <style>
+    .rank-wrapper { max-width: 600px; width: 100%; }
+    .podio {
+      display: flex; align-items: flex-end; justify-content: center;
+      gap: 0.5rem; margin: 1.5rem 0 2rem;
+    }
+    .podio-item {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 0.4rem;
+    }
+    .podio-avatar {
+      width: 52px; height: 52px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.3rem; color: white;
+    }
+    .podio-nome { font-size: 0.75rem; font-weight: 800; text-align: center; max-width: 80px; }
+    .podio-pts { font-size: 0.72rem; color: var(--texto-muted); }
+    .podio-base {
+      border-radius: var(--radius) var(--radius) 0 0;
+      width: 80px; display: flex; align-items: center;
+      justify-content: center;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.5rem; color: white;
+    }
+    .rank-lista { display: flex; flex-direction: column; gap: 0.6rem; }
+    .rank-item {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 0.9rem 1.25rem;
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .rank-item.eu { border-color: var(--roxo-claro); background: rgba(108,62,240,0.1); }
+    .rank-pos {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.3rem; color: var(--texto-muted);
+      min-width: 32px; text-align: center;
+    }
+    .rank-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1rem; color: white; flex-shrink: 0;
+    }
+    .rank-nome { font-weight: 800; font-size: 0.95rem; }
+    .rank-sub { font-size: 0.75rem; color: var(--texto-muted); }
+    .rank-pts {
+      margin-left: auto; font-family: 'Fredoka One', cursive;
+      font-size: 1.2rem; color: var(--amarelo);
+    }
+    .vazio {
+      text-align: center; padding: 3rem;
+      color: var(--texto-muted); font-size: 0.9rem;
+    }
+    .navbar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(15,10,30,0.9);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--card-border);
+      display: flex; align-items: center; justify-content: space-around;
+      padding: 0.75rem 1rem 1rem; z-index: 100;
+    }
+    .nav-item {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 0.2rem;
+      font-size: 0.7rem; font-weight: 700;
+      color: var(--texto-muted); cursor: pointer;
+      text-decoration: none; transition: color 0.2s;
+    }
+    .nav-item i { font-size: 1.4rem; }
+    .nav-item.ativo { color: var(--roxo-claro); }
+  </style>
+</head>
+<body>
+  <div class="stars" id="stars"></div>
+
+  <div class="page" style="justify-content:flex-start;padding-top:2rem;padding-bottom:6rem;">
+    <div class="rank-wrapper">
+      <h2 class="fade-up" style="margin-bottom:0.25rem;">🏆 Ranking</h2>
+      <p style="color:var(--texto-muted);font-size:0.85rem;text-align:center;margin-bottom:0;" class="fade-up-2">Os maiores cientistas da turma</p>
+
+      <!-- Pódio -->
+      <div class="podio fade-up-2" id="podio"></div>
+
+      <!-- Lista -->
+      <div class="rank-lista fade-up-3" id="rank-lista"></div>
+    </div>
+  </div>
+
+  <nav class="navbar">
+    <a class="nav-item" href="home.html"><i class="ti ti-home"></i> Início</a>
+    <a class="nav-item ativo" href="ranking.html"><i class="ti ti-trophy"></i> Ranking</a>
+    <a class="nav-item" href="perfil.html"><i class="ti ti-user"></i> Perfil</a>
+    <span class="nav-item" onclick="logout()"><i class="ti ti-logout"></i> Sair</span>
+  </nav>
+
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/utils.js"></script>
+  <script>
+(async () => {
+
+    if (!await exigirLoginAsync()) return;
+    gerarEstrelas();
+
+    const usuario = getUsuarioLogado();
+    const ranking = await getRanking();
+
+    const cores = ["#6C3EF0","#EC4899","#06B6D4","#10B981","#F59E0B","#F97316","#8B5CF6"];
+    function getCor(idx) { return cores[idx % cores.length]; }
+    function getInicial(u) { return (u.nomeResponsavel || u.nome || "?").charAt(0).toUpperCase(); }
+
+    // Pódio top 3
+    const podioEl = document.getElementById("podio");
+    const ordemPodio = [1, 0, 2]; // segundo, primeiro, terceiro
+    const alturas = [70, 95, 50];
+    const emojisPodio = ["🥈", "🥇", "🥉"];
+    const coresPodio = ["#B0B8C8","#F59E0B","#CD7F32"];
+
+    if (ranking.length === 0) {
+      podioEl.innerHTML = '<p class="vazio">Nenhum usuário cadastrado ainda.</p>';
+    } else {
+      ordemPodio.forEach((posIdx, visualIdx) => {
+        const u = ranking[posIdx];
+        if (!u) return;
+        const div = document.createElement("div");
+        div.className = "podio-item";
+        const eu = u.email === usuario.email;
+        div.innerHTML = `
+          <div class="podio-avatar" style="background:${getCor(posIdx)};${eu ? "box-shadow:0 0 0 3px var(--roxo-claro)" : ""}">${getInicial(u)}</div>
+          <div class="podio-nome">${(u.nomeResponsavel || u.nome || "?").split(' ')[0]}${eu ? " 👈" : ""}</div>
+          <div class="podio-pts">${u.pontos || 0} pts</div>
+          <div class="podio-base" style="height:${alturas[visualIdx]}px;background:${coresPodio[visualIdx]}22;border:1px solid ${coresPodio[visualIdx]}55;">
+            ${emojisPodio[visualIdx]}
+          </div>
+        `;
+        podioEl.appendChild(div);
+      });
+    }
+
+    // Lista completa
+    const lista = document.getElementById("rank-lista");
+    if (ranking.length === 0) {
+      lista.innerHTML = '<p class="vazio">🔭 Nenhum quiz realizado ainda.<br>Seja o primeiro!</p>';
+    } else {
+      ranking.forEach((u, idx) => {
+        const eu = u.email === usuario.email;
+        const item = document.createElement("div");
+        item.className = `rank-item${eu ? " eu" : ""}`;
+        let posEmoji = `#${idx + 1}`;
+        if (idx === 0) posEmoji = "🥇";
+        if (idx === 1) posEmoji = "🥈";
+        if (idx === 2) posEmoji = "🥉";
+
+        item.innerHTML = `
+          <div class="rank-pos">${posEmoji}</div>
+          <div class="rank-avatar" style="background:${getCor(idx)}">${getInicial(u)}</div>
+          <div>
+            <div class="rank-nome">${u.nomeResponsavel}${eu ? " 👈 você" : ""}</div>
+            <div class="rank-sub">🎯 ${u.quizzesFeitos || 0} quizzes</div>
+          </div>
+          <div class="rank-pts">⭐ ${u.pontos || 0}</div>
+        `;
+        lista.appendChild(item);
+      });
+    }
+  
+})();
+</script>
+</body>
+</html>

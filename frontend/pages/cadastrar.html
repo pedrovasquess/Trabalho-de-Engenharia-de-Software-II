@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CiênciaQuiz – Cadastro</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css">
+</head>
+<body>
+  <div class="stars" id="stars"></div>
+  <div class="toast" id="toast"></div>
+
+  <div class="page" style="padding: 3rem 1rem;">
+    <div class="card fade-up" style="max-width:520px;">
+      <p class="titulo-logo">🔬 CiênciaQuiz</p>
+
+      <h2>Criar conta familiar</h2>
+      <p style="text-align:center;color:var(--texto-muted);font-size:0.88rem;margin-bottom:1.75rem;">Preencha os dados do responsável e da criança</p>
+
+      <p style="font-size:0.78rem;font-weight:800;letter-spacing:1px;color:var(--texto-muted);text-transform:uppercase;margin-bottom:0.75rem;">Dados do Responsável</p>
+
+      <div class="input-group">
+        <i class="ti ti-user icon"></i>
+        <input type="text" id="nome_responsavel" placeholder="Nome completo">
+      </div>
+      <div class="input-group">
+        <i class="ti ti-mail icon"></i>
+        <input type="email" id="email" placeholder="E-mail">
+      </div>
+      <div class="input-group">
+        <i class="ti ti-lock icon"></i>
+        <input type="password" id="senha" placeholder="Senha (mín. 6 caracteres)">
+      </div>
+      <div class="input-group">
+        <i class="ti ti-lock-check icon"></i>
+        <input type="password" id="confirmar_senha" placeholder="Confirmar senha">
+      </div>
+
+      <div class="divider">Dados da Criança / Adolescente</div>
+
+      <div class="input-group">
+        <i class="ti ti-heart icon"></i>
+        <input type="text" id="nome_crianca" placeholder="Nome da criança">
+      </div>
+      <div class="input-group">
+        <i class="ti ti-calendar icon"></i>
+        <input type="date" id="data_nascimento">
+      </div>
+
+      <div class="checkbox-grupo">
+        <input type="checkbox" id="consentimento">
+        <label for="consentimento">Sou o responsável legal e consinto com o uso dos dados da criança neste aplicativo educacional.</label>
+      </div>
+
+      <button class="btn btn-primary" onclick="fazerCadastro()">
+        <i class="ti ti-rocket"></i> Criar conta
+      </button>
+
+      <p class="link-texto">Já tem conta? <a href="login.html">Entrar</a></p>
+    </div>
+  </div>
+
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/utils.js"></script>
+  <script>
+    gerarEstrelas();
+
+    async function fazerCadastro() {
+      limparErros();
+      const nomeResponsavel = document.getElementById("nome_responsavel").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const senha = document.getElementById("senha").value;
+      const confirmarSenha = document.getElementById("confirmar_senha").value;
+      const nomeCrianca = document.getElementById("nome_crianca").value.trim();
+      const dataNascimento = document.getElementById("data_nascimento").value;
+      const consentimento = document.getElementById("consentimento").checked;
+
+      let ok = true;
+      if (!nomeResponsavel) { mostrarErro("nome_responsavel", "Informe o nome."); ok = false; }
+      const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email) { mostrarErro("email", "Informe o e-mail."); ok = false; }
+      else if (!emailRe.test(email)) { mostrarErro("email", "E-mail inválido."); ok = false; }
+      if (senha.length < 6) { mostrarErro("senha", "Mínimo 6 caracteres."); ok = false; }
+      if (confirmarSenha !== senha) { mostrarErro("confirmar_senha", "As senhas não coincidem."); ok = false; }
+      if (!nomeCrianca) { mostrarErro("nome_crianca", "Informe o nome da criança."); ok = false; }
+      if (!dataNascimento) { mostrarErro("data_nascimento", "Informe a data."); ok = false; }
+      else {
+        const hoje = new Date(), nasc = new Date(dataNascimento);
+        let idade = hoje.getFullYear() - nasc.getFullYear();
+        const m = hoje.getMonth() - nasc.getMonth();
+        if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--;
+        if (idade < 0 || idade > 17) { mostrarErro("data_nascimento", "Deve ser criança (0–17 anos)."); ok = false; }
+      }
+      if (!consentimento) {
+        const el = document.querySelector("label[for='consentimento']");
+        let err = el.parentElement.querySelector(".erro-msg");
+        if (!err) { err = document.createElement("span"); err.className = "erro-msg"; el.parentElement.appendChild(err); }
+        err.textContent = "Consentimento obrigatório."; ok = false;
+      }
+      if (!ok) return;
+
+      const resultado = await authCadastro({ nomeResponsavel, email, senha, nomeCrianca, dataNascimento });
+      if (!resultado.ok) { mostrarErro("email", resultado.msg); return; }
+
+      toast("Conta criada com sucesso! 🎉", "sucesso");
+      setTimeout(() => window.location.href = "login.html", 1500);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CiênciaQuiz – Perfil</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css">
+  <style>
+    .perfil-wrapper { max-width: 520px; width: 100%; }
+    .perfil-hero {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      text-align: center;
+      margin-bottom: 1.25rem;
+    }
+    .perfil-avatar {
+      width: 88px; height: 88px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--roxo), var(--ciano));
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Fredoka One', cursive;
+      font-size: 2.5rem; color: white;
+      margin: 0 auto 1rem;
+      animation: pulse-ring 3s ease-in-out infinite;
+    }
+    .perfil-nome { font-family: 'Fredoka One', cursive; font-size: 1.6rem; }
+    .perfil-email { color: var(--texto-muted); font-size: 0.85rem; margin-top: 0.2rem; }
+    .nivel-barra-outer {
+      background: rgba(255,255,255,0.08);
+      border-radius: 100px; height: 8px;
+      margin: 1rem 0 0.5rem; overflow: hidden;
+    }
+    .nivel-barra-inner {
+      height: 100%; border-radius: 100px;
+      background: linear-gradient(90deg, var(--roxo), var(--ciano));
+      transition: width 1s ease;
+    }
+    .nivel-labels {
+      display: flex; justify-content: space-between;
+      font-size: 0.72rem; color: var(--texto-muted); font-weight: 700;
+    }
+    .secao {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .secao-titulo-sm {
+      font-size: 0.72rem; font-weight: 800; letter-spacing: 1.5px;
+      color: var(--texto-muted); text-transform: uppercase; margin-bottom: 1rem;
+    }
+    .conquista-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 0.6rem;
+    }
+    .conquista {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 0.3rem;
+      padding: 0.75rem 0.3rem;
+      border-radius: var(--radius);
+      font-size: 1.6rem;
+      text-align: center;
+    }
+    .conquista.bloqueada { opacity: 0.25; filter: grayscale(1); }
+    .conquista-label { font-size: 0.65rem; color: var(--texto-muted); font-weight: 700; }
+    .info-row {
+      display: flex; justify-content: space-between;
+      align-items: center; padding: 0.65rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 0.88rem;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-row-label { color: var(--texto-muted); font-weight: 700; }
+    .info-row-val { font-weight: 800; }
+    .navbar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(15,10,30,0.9);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--card-border);
+      display: flex; align-items: center; justify-content: space-around;
+      padding: 0.75rem 1rem 1rem; z-index: 100;
+    }
+    .nav-item {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 0.2rem;
+      font-size: 0.7rem; font-weight: 700;
+      color: var(--texto-muted); cursor: pointer;
+      text-decoration: none; transition: color 0.2s;
+    }
+    .nav-item i { font-size: 1.4rem; }
+    .nav-item.ativo { color: var(--roxo-claro); }
+    .crianca-card {
+      background: rgba(6,182,212,0.08);
+      border: 1px solid rgba(6,182,212,0.2);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .crianca-emoji { font-size: 2rem; }
+  </style>
+</head>
+<body>
+  <div class="stars" id="stars"></div>
+
+  <div class="page" style="justify-content:flex-start;padding-top:2rem;padding-bottom:6rem;">
+    <div class="perfil-wrapper">
+
+      <!-- Hero -->
+      <div class="perfil-hero fade-up">
+        <div class="perfil-avatar" id="p-avatar">?</div>
+        <div class="perfil-nome" id="p-nome">–</div>
+        <div class="perfil-email" id="p-email">–</div>
+
+        <div class="nivel-barra-outer">
+          <div class="nivel-barra-inner" id="nivel-barra" style="width:0%"></div>
+        </div>
+        <div class="nivel-labels">
+          <span id="nivel-atual-txt">Aprendiz</span>
+          <span id="nivel-pts-txt">0 / 50 pts</span>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="secao fade-up-2">
+        <p class="secao-titulo-sm">📊 Estatísticas</p>
+        <div class="info-row">
+          <span class="info-row-label">⭐ Pontos totais</span>
+          <span class="info-row-val" id="s-pontos">0</span>
+        </div>
+        <div class="info-row">
+          <span class="info-row-label">🎯 Quizzes feitos</span>
+          <span class="info-row-val" id="s-quizzes">0</span>
+        </div>
+        <div class="info-row">
+          <span class="info-row-label">📅 Membro desde</span>
+          <span class="info-row-val" id="s-criado">–</span>
+        </div>
+        <div class="info-row">
+          <span class="info-row-label">📈 Nível</span>
+          <span class="info-row-val" id="s-nivel">Aprendiz</span>
+        </div>
+      </div>
+
+      <!-- Criança -->
+      <div class="secao fade-up-2">
+        <p class="secao-titulo-sm">👶 Dados da Criança</p>
+        <div class="crianca-card">
+          <span class="crianca-emoji">🧒</span>
+          <div>
+            <div style="font-weight:800;" id="c-nome">–</div>
+            <div style="font-size:0.8rem;color:var(--texto-muted);" id="c-idade">–</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conquistas -->
+      <div class="secao fade-up-3">
+        <p class="secao-titulo-sm">🏅 Conquistas</p>
+        <div class="conquista-grid" id="conquistas-grid"></div>
+      </div>
+
+      <!-- Botão sair -->
+      <button class="btn btn-danger fade-up-3" onclick="logout()">
+        <i class="ti ti-logout"></i> Sair da conta
+      </button>
+
+    </div>
+  </div>
+
+  <nav class="navbar">
+    <a class="nav-item" href="home.html"><i class="ti ti-home"></i> Início</a>
+    <a class="nav-item" href="ranking.html"><i class="ti ti-trophy"></i> Ranking</a>
+    <a class="nav-item ativo" href="perfil.html"><i class="ti ti-user"></i> Perfil</a>
+    <span class="nav-item" onclick="logout()"><i class="ti ti-logout"></i> Sair</span>
+  </nav>
+
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/utils.js"></script>
+  <script>
+(async () => {
+
+    if (!await exigirLoginAsync()) return;
+    gerarEstrelas();
+
+    const u = getUsuarioLogado();
+    const pontos = u.pontos || 0;
+    const quizzes = u.quizzesFeitos || 0;
+
+    // Backend salva como "nome", fallback para "nomeResponsavel"
+    const nomeExibir = u.nome || u.nomeResponsavel || "Usuário";
+
+    document.getElementById("p-avatar").textContent = nomeExibir.charAt(0).toUpperCase();
+    document.getElementById("p-nome").textContent = nomeExibir;
+    document.getElementById("p-email").textContent = u.email;
+    document.getElementById("s-pontos").textContent = pontos;
+    document.getElementById("s-quizzes").textContent = quizzes;
+    document.getElementById("c-nome").textContent = u.nomeCrianca || "–";
+
+    // Idade da criança
+    if (u.dataNascimento) {
+      const nasc = new Date(u.dataNascimento);
+      const hoje = new Date();
+      let idade = hoje.getFullYear() - nasc.getFullYear();
+      const m = hoje.getMonth() - nasc.getMonth();
+      if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--;
+      document.getElementById("c-idade").textContent = `${idade} anos`;
+    }
+
+    // Data cadastro
+    if (u.criadoEm) {
+      const d = new Date(u.criadoEm);
+      document.getElementById("s-criado").textContent = d.toLocaleDateString("pt-BR");
+    }
+
+    // Nível e barra
+    const niveis = [
+      { nome: "Aprendiz", min: 0, max: 50 },
+      { nome: "Estudante", min: 50, max: 200 },
+      { nome: "Expert", min: 200, max: 500 },
+      { nome: "Sábio", min: 500, max: 1000 },
+      { nome: "Gênio", min: 1000, max: 9999 },
+    ];
+    let nivelAtual = niveis[0];
+    for (const n of niveis) {
+      if (pontos >= n.min) nivelAtual = n;
+    }
+    const pct = Math.min(((pontos - nivelAtual.min) / (nivelAtual.max - nivelAtual.min)) * 100, 100);
+    setTimeout(() => document.getElementById("nivel-barra").style.width = pct + "%", 300);
+    document.getElementById("nivel-atual-txt").textContent = nivelAtual.nome;
+    document.getElementById("nivel-pts-txt").textContent = `${pontos} / ${nivelAtual.max} pts`;
+    document.getElementById("s-nivel").textContent = nivelAtual.nome;
+
+    // Conquistas
+    const conquistas = [
+      { emoji: "🚀", label: "Primeiro Quiz", cond: quizzes >= 1 },
+      { emoji: "🔟", label: "10 Quizzes", cond: quizzes >= 10 },
+      { emoji: "⭐", label: "50 Pontos", cond: pontos >= 50 },
+      { emoji: "💫", label: "200 Pontos", cond: pontos >= 200 },
+      { emoji: "🏆", label: "500 Pontos", cond: pontos >= 500 },
+      { emoji: "🧠", label: "Gênio", cond: pontos >= 1000 },
+      { emoji: "🔥", label: "Expert", cond: pontos >= 200 },
+      { emoji: "🎯", label: "Maratonista", cond: quizzes >= 5 },
+    ];
+    const grid = document.getElementById("conquistas-grid");
+    conquistas.forEach(c => {
+      const div = document.createElement("div");
+      div.className = `conquista${c.cond ? "" : " bloqueada"}`;
+      div.style.background = c.cond ? "rgba(108,62,240,0.15)" : "rgba(255,255,255,0.03)";
+      div.style.border = `1px solid ${c.cond ? "rgba(108,62,240,0.3)" : "rgba(255,255,255,0.06)"}`;
+      div.innerHTML = `${c.emoji}<span class="conquista-label">${c.label}</span>`;
+      grid.appendChild(div);
+    });
+  
+})();
+</script>
+</body>
+</html>

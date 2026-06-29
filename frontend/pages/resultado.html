@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CiênciaQuiz – Resultado</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css">
+  <style>
+    .resultado-wrapper {
+      max-width: 500px; width: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 1.5rem;
+    }
+    .troféu {
+      font-size: 5rem;
+      animation: float 3s ease-in-out infinite;
+      filter: drop-shadow(0 0 30px rgba(245,158,11,0.5));
+    }
+    .resultado-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 2rem 1.75rem;
+      width: 100%; text-align: center;
+    }
+    .pontos-grandes {
+      font-family: 'Fredoka One', cursive;
+      font-size: 4.5rem;
+      background: linear-gradient(135deg, var(--amarelo), var(--laranja));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      margin: 0.5rem 0;
+    }
+    .estrelas-row {
+      display: flex; justify-content: center; gap: 0.5rem;
+      font-size: 2.2rem; margin: 1rem 0;
+    }
+    .estrela { opacity: 0.2; transition: opacity 0.5s; }
+    .estrela.on { opacity: 1; animation: pop 0.4s ease; }
+    @keyframes pop {
+      0% { transform: scale(0); }
+      60% { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
+    .stats-resultado {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 0.75rem; margin-top: 1.25rem;
+    }
+    .stat-res {
+      background: rgba(255,255,255,0.05);
+      border-radius: var(--radius);
+      padding: 0.75rem;
+    }
+    .stat-res-num {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.6rem;
+    }
+    .stat-res-label {
+      font-size: 0.72rem; color: var(--texto-muted);
+      font-weight: 700;
+    }
+    .mensagem-txt {
+      font-size: 1.05rem; font-weight: 700;
+      color: var(--texto-muted);
+      margin-top: 0.5rem;
+    }
+    .confetti-piece {
+      position: fixed;
+      width: 10px; height: 10px;
+      border-radius: 2px;
+      animation: confettiFall linear forwards;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    @keyframes confettiFall {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+    .area-chip {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.35rem 0.9rem;
+      border-radius: 100px;
+      font-size: 0.8rem; font-weight: 800;
+      background: rgba(108,62,240,0.2);
+      border: 1px solid rgba(108,62,240,0.3);
+      color: var(--roxo-claro);
+      margin-bottom: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="stars" id="stars"></div>
+
+  <div class="page">
+    <div class="resultado-wrapper">
+
+      <div class="troféu fade-up" id="trofeu">🏆</div>
+
+      <div class="resultado-card fade-up-2">
+        <div class="area-chip" id="area-chip">🔬 Ciências</div>
+        <p style="color:var(--texto-muted);font-size:0.85rem;">Você completou o quiz!</p>
+
+        <div class="pontos-grandes" id="pontos-val">0</div>
+        <p style="color:var(--texto-muted);font-size:0.85rem;margin-top:0.25rem;">pontos ganhos</p>
+
+        <div class="estrelas-row" id="estrelas-row">
+          <span class="estrela" id="e1">⭐</span>
+          <span class="estrela" id="e2">⭐</span>
+          <span class="estrela" id="e3">⭐</span>
+        </div>
+
+        <p class="mensagem-txt" id="mensagem">Ótimo trabalho!</p>
+
+        <div class="stats-resultado">
+          <div class="stat-res">
+            <div class="stat-res-num" id="stat-total-pts" style="color:var(--amarelo);">0</div>
+            <div class="stat-res-label">⭐ PONTOS TOTAIS</div>
+          </div>
+          <div class="stat-res">
+            <div class="stat-res-num" id="stat-quizzes-feitos" style="color:var(--ciano);">0</div>
+            <div class="stat-res-label">🎯 QUIZZES FEITOS</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:0.75rem;width:100%;" class="fade-up-3">
+        <button class="btn btn-secondary" style="flex:1;" onclick="window.location.href='home.html'">
+          <i class="ti ti-home"></i> Início
+        </button>
+        <button class="btn btn-primary" style="flex:1;" onclick="jogarNovamente()">
+          <i class="ti ti-refresh"></i> Jogar de novo
+        </button>
+      </div>
+
+      <button class="btn" style="width:100%;background:linear-gradient(135deg,#EC4899,#F97316);color:white;" onclick="window.location.href='ranking.html'">
+        <i class="ti ti-trophy"></i> Ver Ranking
+      </button>
+
+    </div>
+  </div>
+
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/utils.js"></script>
+  <script src="../assets/js/questoes.js"></script>
+  <script>
+(async () => {
+
+    if (!await exigirLoginAsync()) return;
+    gerarEstrelas();
+
+    const res = JSON.parse(localStorage.getItem("resultado") || "{}");
+    const usuario = getUsuarioLogado();
+    const pontos = res.pontos || 0;
+    const area = res.area || "biologia";
+    const nivel = res.nivel || "crianca";
+
+    // Área info
+    const areaInfo = AREAS.find(a => a.id === area) || { emoji: "🎲", nome: "Surpresa" };
+    document.getElementById("area-chip").textContent = `${areaInfo.emoji} ${areaInfo.nome} – ${nivel === "crianca" ? "Infantil" : "Ensino Médio"}`;
+
+    // Pontos animados
+    let p = 0;
+    const target = pontos;
+    const el = document.getElementById("pontos-val");
+    const step = Math.max(1, Math.floor(target / 40));
+    const interval = setInterval(() => {
+      p = Math.min(p + step, target);
+      el.textContent = p;
+      if (p >= target) clearInterval(interval);
+    }, 30);
+
+    // Estatísticas
+    document.getElementById("stat-total-pts").textContent = usuario.pontos || 0;
+    document.getElementById("stat-quizzes-feitos").textContent = usuario.quizzesFeitos || 0;
+
+    // Troféu + estrelas + mensagem
+    const maxPontos = 5 * (10 + 10); // estimativa
+    const pct = Math.min(pontos / 80, 1);
+    let estrelas = 0, msg = "", trofeu = "😔";
+
+    if (pct >= 0.85) { estrelas = 3; msg = "Incrível! Você é um gênio! 🧠"; trofeu = "🏆"; }
+    else if (pct >= 0.55) { estrelas = 2; msg = "Muito bem! Continue assim! 💪"; trofeu = "🥈"; }
+    else if (pct >= 0.25) { estrelas = 1; msg = "Bom começo! Tente melhorar! 📚"; trofeu = "🥉"; }
+    else { msg = "Continue estudando, você vai melhorar! 💡"; trofeu = "😤"; }
+
+    document.getElementById("trofeu").textContent = trofeu;
+    document.getElementById("mensagem").textContent = msg;
+
+    setTimeout(() => {
+      for (let i = 1; i <= estrelas; i++) {
+        setTimeout(() => {
+          document.getElementById(`e${i}`).classList.add("on");
+        }, i * 300);
+      }
+    }, 500);
+
+    // Confetti se bom resultado
+    if (estrelas >= 2) {
+      const cores = ["#6C3EF0","#EC4899","#06B6D4","#F59E0B","#10B981","#F97316"];
+      for (let i = 0; i < 60; i++) {
+        const c = document.createElement("div");
+        c.className = "confetti-piece";
+        c.style.cssText = `
+          left:${Math.random() * 100}vw;
+          top:-10px;
+          background:${cores[Math.floor(Math.random() * cores.length)]};
+          animation-duration:${1.5 + Math.random() * 2}s;
+          animation-delay:${Math.random() * 1}s;
+          width:${6 + Math.random() * 8}px;
+          height:${6 + Math.random() * 8}px;
+          border-radius:${Math.random() > 0.5 ? "50%" : "2px"};
+        `;
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 4000);
+      }
+    }
+
+    window.jogarNovamente = function() {
+      window.location.href = "quiz.html";
+    };
+  
+})();
+</script>
+</body>
+</html>

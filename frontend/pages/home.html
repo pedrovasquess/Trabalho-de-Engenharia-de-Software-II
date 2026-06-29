@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CiênciaQuiz – Início</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css">
+  <style>
+    .home-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .avatar {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--roxo), var(--ciano));
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.8rem; color: white;
+      margin: 0 auto 1rem;
+      animation: pulse-ring 2.5s ease-in-out infinite;
+    }
+    .nivel-toggle {
+      display: flex; gap: 0.5rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--card-border);
+      border-radius: 100px;
+      padding: 0.3rem;
+      margin: 0 auto 2.5rem;
+      width: fit-content;
+    }
+    .nivel-btn {
+      padding: 0.5rem 1.4rem;
+      border-radius: 100px;
+      border: none;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.25s;
+      color: var(--texto-muted);
+      background: transparent;
+    }
+    .nivel-btn.ativo {
+      background: linear-gradient(135deg, var(--roxo), var(--roxo-claro));
+      color: white;
+      box-shadow: 0 2px 12px rgba(108,62,240,0.4);
+    }
+    .areas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 1rem;
+      max-width: 700px;
+      width: 100%;
+      margin-bottom: 2rem;
+    }
+    .area-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s;
+      text-decoration: none;
+      color: var(--texto);
+      display: flex; flex-direction: column;
+      align-items: center; gap: 0.6rem;
+      position: relative; overflow: hidden;
+    }
+    .area-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .area-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.25); }
+    .area-card:hover::before { opacity: 1; }
+    .area-emoji { font-size: 2.4rem; line-height: 1; }
+    .area-nome { font-weight: 800; font-size: 0.9rem; }
+    .area-qtd { font-size: 0.75rem; color: var(--texto-muted); }
+    .stats-row {
+      display: flex; gap: 1rem;
+      max-width: 700px; width: 100%;
+      margin-bottom: 2.5rem;
+    }
+    .stat-card {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      text-align: center;
+    }
+    .stat-num {
+      font-family: 'Fredoka One', cursive;
+      font-size: 2rem;
+      background: linear-gradient(135deg, var(--roxo-claro), var(--ciano));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label { font-size: 0.75rem; color: var(--texto-muted); font-weight: 700; }
+    .navbar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(15,10,30,0.9);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--card-border);
+      display: flex; align-items: center; justify-content: space-around;
+      padding: 0.75rem 1rem 1rem;
+      z-index: 100;
+    }
+    .nav-item {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 0.2rem;
+      font-size: 0.7rem; font-weight: 700;
+      color: var(--texto-muted); cursor: pointer;
+      text-decoration: none; transition: color 0.2s;
+    }
+    .nav-item i { font-size: 1.4rem; }
+    .nav-item.ativo { color: var(--roxo-claro); }
+    .nivel-badge {
+      position: absolute; top: 0.6rem; right: 0.6rem;
+      font-size: 0.65rem; font-weight: 800; padding: 0.15rem 0.45rem;
+      border-radius: 100px;
+    }
+    .secao-titulo {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+      max-width: 700px; width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="stars" id="stars"></div>
+  <div class="toast" id="toast"></div>
+
+  <div class="page" style="padding-bottom: 6rem; justify-content: flex-start; padding-top: 2rem;">
+
+    <!-- Header -->
+    <div class="home-header fade-up">
+      <div class="avatar" id="avatar">?</div>
+      <h2 id="saudacao">Olá! 👋</h2>
+      <p style="color:var(--texto-muted); font-size:0.88rem;" id="sub-saudacao">Escolha uma área para começar</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row fade-up-2">
+      <div class="stat-card">
+        <div class="stat-num" id="stat-pontos">0</div>
+        <div class="stat-label">⭐ PONTOS</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-quizzes">0</div>
+        <div class="stat-label">🎯 QUIZZES</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-nivel-txt">–</div>
+        <div class="stat-label">🎓 NÍVEL</div>
+      </div>
+    </div>
+
+    <!-- Nível Toggle -->
+    <div class="nivel-toggle fade-up-2">
+      <button class="nivel-btn ativo" id="btn-crianca" onclick="setNivel('crianca')">🌱 Infantil</button>
+      <button class="nivel-btn" id="btn-medio" onclick="setNivel('medio')">🚀 Ensino Médio</button>
+    </div>
+
+    <!-- Áreas -->
+    <p class="secao-titulo fade-up-3">🧪 Escolha uma área</p>
+    <div class="areas-grid fade-up-3" id="areas-grid"></div>
+
+    <!-- Modo Surpresa -->
+    <div style="max-width:700px;width:100%;" class="fade-up-3">
+      <div class="area-card" style="flex-direction:row; gap:1rem; padding:1.25rem 1.5rem;"
+           onclick="iniciarSurpresa()">
+        <span style="font-size:2rem;">🎲</span>
+        <div style="text-align:left;">
+          <div style="font-weight:800;">Modo Surpresa</div>
+          <div style="font-size:0.78rem;color:var(--texto-muted);">Perguntas aleatórias de todas as áreas</div>
+        </div>
+        <i class="ti ti-chevron-right" style="margin-left:auto;font-size:1.2rem;color:var(--texto-muted);"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a class="nav-item ativo" href="home.html">
+      <i class="ti ti-home"></i> Início
+    </a>
+    <a class="nav-item" href="ranking.html">
+      <i class="ti ti-trophy"></i> Ranking
+    </a>
+    <a class="nav-item" href="perfil.html">
+      <i class="ti ti-user"></i> Perfil
+    </a>
+    <span class="nav-item" onclick="logout()">
+      <i class="ti ti-logout"></i> Sair
+    </span>
+  </nav>
+
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/utils.js"></script>
+  <script src="../assets/js/questoes.js"></script>
+  <script>
+  (async () => {
+    if (!await exigirLoginAsync()) return;
+    gerarEstrelas();
+
+    let nivelAtual = localStorage.getItem("nivelQuiz") || "crianca";
+    const usuario = getUsuarioLogado();
+
+    // Backend salva como "nome", fallback para "nomeResponsavel"
+    const nomeExibir = usuario.nome || usuario.nomeResponsavel || "Usuário";
+
+    document.getElementById("avatar").textContent = nomeExibir.charAt(0).toUpperCase();
+    document.getElementById("saudacao").textContent = `Olá, ${nomeExibir.split(' ')[0]}! 👋`;
+    document.getElementById("stat-pontos").textContent = usuario.pontos || 0;
+    document.getElementById("stat-quizzes").textContent = usuario.quizzesFeitos || 0;
+
+    const pts = usuario.pontos || 0;
+    let nivelTxt = "Aprendiz";
+    if (pts >= 500) nivelTxt = "Sábio";
+    else if (pts >= 200) nivelTxt = "Expert";
+    else if (pts >= 50) nivelTxt = "Estudante";
+    document.getElementById("stat-nivel-txt").textContent = nivelTxt;
+
+    window.setNivel = function(nivel) {
+      nivelAtual = nivel;
+      localStorage.setItem("nivelQuiz", nivel);
+      document.getElementById("btn-crianca").classList.toggle("ativo", nivel === "crianca");
+      document.getElementById("btn-medio").classList.toggle("ativo", nivel === "medio");
+      renderAreas();
+    };
+
+    function renderAreas() {
+      const grid = document.getElementById("areas-grid");
+      grid.innerHTML = "";
+      AREAS.forEach(area => {
+        const qtd = QUESTOES[area.id][nivelAtual].length;
+        const card = document.createElement("div");
+        card.className = "area-card";
+        card.style.setProperty("--cor", area.cor);
+        card.innerHTML = `
+          <span class="nivel-badge" style="background:${area.cor}22;color:${area.cor};border:1px solid ${area.cor}44;">
+            ${nivelAtual === "crianca" ? "🌱" : "🚀"}
+          </span>
+          <span class="area-emoji">${area.emoji}</span>
+          <span class="area-nome">${area.nome}</span>
+          <span class="area-qtd">${qtd} perguntas</span>
+        `;
+        card.style.borderColor = area.cor + "33";
+        card.onmouseenter = () => card.style.borderColor = area.cor + "88";
+        card.onmouseleave = () => card.style.borderColor = area.cor + "33";
+        card.onclick = () => {
+          localStorage.setItem("quizArea", area.id);
+          localStorage.setItem("quizNivel", nivelAtual);
+          window.location.href = "quiz.html";
+        };
+        grid.appendChild(card);
+      });
+    }
+
+    window.iniciarSurpresa = function() {
+      localStorage.setItem("quizArea", "surpresa");
+      localStorage.setItem("quizNivel", nivelAtual);
+      window.location.href = "quiz.html";
+    };
+
+    setNivel(nivelAtual);
+  })();
+  </script>
+</body>
+</html>
